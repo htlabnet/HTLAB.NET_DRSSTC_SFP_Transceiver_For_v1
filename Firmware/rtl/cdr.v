@@ -17,7 +17,10 @@ module cdr (
 
     // Output Recovery Data
     output  reg             o_RecoveryData,
-    output  reg             o_DataEn
+    output  reg             o_DataEn,
+
+    // Error
+    output  reg             o_err
 );
 
     // Input data synchronizer
@@ -35,17 +38,29 @@ module cdr (
     
     // Recovery Logic
     reg     [1:0]   r_rcvState;
+    reg             r_ts_old;
     always @(posedge i_clk or negedge i_res_n) begin
         if (~i_res_n) begin
             r_rcvState <= 2'd0;
             o_RecoveryData <= 1'b0;
             o_DataEn <= 1'b0;
+            o_err <= 1'b0;
+            r_ts_old <= 1'b0;
         end else begin
+            r_ts_old <= w_ts;
+
             // Update transition position
             if (w_ts) begin
                 r_rcvState <= 2'd0;
+
+                // Error detect
+                if (r_rcvState == 2'd1 || r_ts_old == 1'b1) begin
+                    o_err <= 1'b1;
+                end
+
             end else begin
                 r_rcvState <= r_rcvState + 2'd1;
+                o_err <= 1'b0;
             end
 
             // Capture data stream
