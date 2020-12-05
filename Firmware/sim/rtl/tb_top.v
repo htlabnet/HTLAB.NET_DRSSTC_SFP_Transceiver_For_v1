@@ -89,9 +89,26 @@ module tb_top ();
     // Loop back test
     //==================================================================
     parameter jitter = 2;
+    reg     [31:0]  r_dummy_err_cnt = 32'd0;
+    // 異常ステート再現
+    wire            w_dummy_err_inv  = (r_dummy_err_cnt == 32'd50011);   // 1bit反転
+    wire            w_dummy_err_high = (r_dummy_err_cnt >= 32'd100000 && r_dummy_err_cnt <= 32'd120000);    // High固定
+    wire            w_dummy_err_low  = (r_dummy_err_cnt >= 32'd200000 && r_dummy_err_cnt <= 32'd220000);    // Low固定
+    always @(posedge mco) begin
+        r_dummy_err_cnt <= r_dummy_err_cnt + 32'd1;
+    end
     always #(500000000 / MCO_HZ + $random %(jitter)) jclk <= ~jclk; 
     always @(posedge mco) begin
-        r_lvds_dat_out <= w_lvds_dat_in;
+        // 擬似的にノイズ混入
+        if (w_dummy_err_inv) begin
+            r_lvds_dat_out <= ~w_lvds_dat_in;
+        end else if (w_dummy_err_high) begin
+            r_lvds_dat_out <= 1'b1;
+        end else if (w_dummy_err_low) begin
+            r_lvds_dat_out <= 1'b0;
+        end else begin
+            r_lvds_dat_out <= w_lvds_dat_in;
+        end
     end
 
 

@@ -8,6 +8,11 @@
 ../rtl/encode_8b10b.v
 ../rtl/decode_8b10b.v
 ../rtl/serial_tx_master.v
-../rtl/serial_rx.v
+../rtl/serial_tx_slave.v
+../rtl/serial_rx_master.v
+../rtl/serial_rx_slave.v
 ../rtl/cdr.v
 ../rtl/boot_seq.v
+../rtl/uart_tx.v
+../rtl/delta_sigma_adc.v
+../rtl/test_counter.v
