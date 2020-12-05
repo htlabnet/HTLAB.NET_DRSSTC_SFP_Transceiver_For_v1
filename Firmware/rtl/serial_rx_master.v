@@ -1,15 +1,15 @@
 /*============================================================================*/
 /*
- * @file    serial_rx_slave.v
- * @brief   Serial data recieve & decode module for slave CPLD
+ * @file    serial_rx_master.v
+ * @brief   Serial data recieve & decode module for master CPLD
  * @note    Sampling rate    : 40MHz
             Serial data rate : 10Mbps
- * @date    2020/11/28
+ * @date    2020/12/05
  * @author  kingyo
  */
 /*============================================================================*/
 
-module serial_rx_slave (
+module serial_rx_master (
     input   wire            i_clk,      // 40MHz
     input   wire            i_res_n,
 
@@ -20,7 +20,7 @@ module serial_rx_slave (
     output  wire            o_rcv_en_n,
 
     // Output data
-    output  reg             o_RawPls,
+    output  reg             o_over_current,
     output  reg     [15:0]  o_rx_data1,
     output  reg     [15:0]  o_rx_data2,
 
@@ -178,7 +178,7 @@ module serial_rx_slave (
     reg             r_p1_allok;
     always @(posedge i_clk or negedge i_res_n) begin
         if (~i_res_n) begin
-            o_RawPls <= 1'b0;
+            o_over_current <= 1'b0;
             o_rx_data1 <= 16'd0;
             o_rx_data2 <= 16'd0;
             r_rx_data1_buf <= 16'd0;
@@ -199,8 +199,8 @@ module serial_rx_slave (
             end else begin
                 if (w_p1_ok & r_sym_locked) begin
 
-                    // Update RawPls status
-                    o_RawPls <= w_8b_data[7];
+                    // Update Over current status
+                    o_over_current <= w_8b_data[7];
 
                     // Assembling the rx data.
                     case (r_rx_data_cnt[3:0])
@@ -217,7 +217,6 @@ module serial_rx_slave (
                 end else begin
                     // Parity error or symbol lock NG.
                     r_p1_allok <= 1'b0;
-                    o_RawPls <= 1'b0;
                 end
 
                 if (r_rx_data_cnt != 4'hF) begin
@@ -229,6 +228,6 @@ module serial_rx_slave (
 
     // RX LED
     assign o_rx_led[0] = ~r_sym_locked;     // Red
-    assign o_rx_led[1] = o_RawPls;          // Green
+    assign o_rx_led[1] = o_over_current;    // Green
 
 endmodule

@@ -1,20 +1,20 @@
 /*============================================================================*/
 /*
- * @file    serial_tx_master.v
+ * @file    serial_tx_slave.v
  * @brief   Serial data transmitter module
- * @note    for Master Device
- * @date    2020/11/23
+ * @note    for Slave Device
+ * @date    2020/12/05
  * @author  kingyo
  */
 /*============================================================================*/
 
-module serial_tx_master (
+module serial_tx_slave (
     input   wire            i_clk,      // 40MHz
     input   wire            i_res_n,
     input   wire            i_sfp_tx_flt,
     
     // Input data
-    input   wire            i_RawPls,
+    input   wire            i_over_current,
     input   wire    [15:0]  i_tx_data1,
     input   wire    [15:0]  i_tx_data2,  
 
@@ -52,14 +52,14 @@ module serial_tx_master (
     end
 
     // Input Register
-    reg             r_RawPls;
+    reg             r_over_current;
     reg     [15:0]  r_tx_data1;
     reg     [15:0]  r_tx_data2;
     always @(posedge i_clk or negedge i_res_n) begin
         if (~i_res_n) begin
-            r_RawPls <= 1'b0;
+            r_over_current <= 1'b0;
         end else begin
-            r_RawPls <= i_RawPls;
+            r_over_current <= i_over_current;
         end
     end
     always @(posedge i_clk or negedge i_res_n) begin
@@ -97,10 +97,10 @@ module serial_tx_master (
                                                        6'd0;
 
     // Calc parity
-    wire            w_p1 = r_RawPls ^ ^w_tx_buf[5:0] ^ 1'b1;
+    wire            w_p1 = r_over_current ^ ^w_tx_buf[5:0] ^ 1'b1;
 
     // MOSI Data
-    wire    [7:0]   w_mosi_8b = {r_RawPls, w_tx_buf[5:0], w_p1};
+    wire    [7:0]   w_mosi_8b = {r_over_current, w_tx_buf[5:0], w_p1};
 
     // Dispality Controll
     reg             r_dispin;
